@@ -27,6 +27,8 @@ mutube.ipa: $(YOUTUBE_IPA) $(MUTUBE_HOOKS)
 	mkdir -p $(TMPDIR)/yt-unzip
 	unzip -q $(YOUTUBE_IPA) -d $(TMPDIR)/yt-unzip
 	cp $(MUTUBE_HOOKS) $(TMPDIR)/yt-unzip/Payload/YouTubeUnstable.app/Frameworks/MuTubeHooks.dylib
+	# Make __TEXT segment writable to allow runtime hooking (replaces gum-graft)
+	python3 ./make_code_writable.py $(TMPDIR)/yt-unzip/Payload/YouTubeUnstable.app/YouTubeUnstable
 	insert_dylib --strip-codesig --inplace '@executable_path/Frameworks/MuTubeHooks.dylib' $(TMPDIR)/yt-unzip/Payload/YouTubeUnstable.app/YouTubeUnstable
 	cd $(TMPDIR)/yt-unzip && zip -qr injected.ipa Payload
 	mv $(TMPDIR)/yt-unzip/injected.ipa mutube.ipa

@@ -24,6 +24,10 @@ static const char* injectedContent =
 // Domains to whitelist in CSP
 static const char* cspWhitelist = "sponsorblock.inf.re sponsor.ajay.app dearrow-thumb.ajay.app cdn.jsdelivr.net ";
 
+// libc++ insert function pointer
+typedef void* (*insert_fn)(void* str, size_t pos, const char* s, size_t n);
+static insert_fn std_string_insert = nullptr;
+
 // Structure to hold original function bytes and trampoline
 struct HookInfo {
     void* targetAddress;
@@ -35,10 +39,6 @@ struct HookInfo {
 // Hook information for our two hooks
 static HookInfo htmlScriptHook = {0};
 static HookInfo directiveListHook = {0};
-
-// libc++ insert function pointer
-typedef void* (*insert_fn)(void* str, size_t pos, const char* s, size_t n);
-static insert_fn std_string_insert = nullptr;
 
 // Helper function to read std::string
 struct StdStringData {
