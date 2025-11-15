@@ -10,14 +10,18 @@ MuTube has been tested with YouTube 4.51.08 on an Apple TV 4K.
 ### Prerequisites
 
 1. Xcode Command Line Tools (for building the hook dylib)
-2. Python 3 (for binary modification script)
-3. [insert_dylib](https://github.com/Tyilo/insert_dylib)
+2. [insert_dylib](https://github.com/Tyilo/insert_dylib)
+3. `wget` (for downloading gum-graft)
 
     ```bash
+    # Install insert_dylib
     git clone https://github.com/Tyilo/insert_dylib
     cd insert_dylib
     xcodebuild
     cp build/Release/insert_dylib /usr/local/bin/insert_dylib
+
+    # Install wget (if not already installed)
+    brew install wget
     ```
 
 ### Building
@@ -34,29 +38,39 @@ TizenTube has loaded successfully.
 
 ## Technical Details
 
-MuTube uses a two-step approach to enable runtime hooking without Frida:
+MuTube uses **gum-graft** (Frida's static binary patcher) with a custom dylib that replaces Frida Gadget:
 
-### 1. Binary Modification (`make_code_writable.py`)
-- Modifies the Mach-O `__TEXT` segment protection flags
-- Adds `VM_PROT_WRITE` to `maxprot` and `initprot`
-- This allows code pages to be made writable at runtime (normally prohibited on iOS/tvOS)
-- Replaces Frida's gum-graft functionality
+### 1. Static Binary Patching (`gum-graft`)
+- Downloads gum-graft at build time (version-agnostic tool)
+- Instruments two code offsets in the YouTube binary:
+  - `0xed5270` - HTMLScriptElement::Execute
+  - `0x152d508` - DirectiveList::AddDirective
+- Creates trampolines and a `GumGraftedHeader` structure in the binary
+- No Frida Gadget dependency = no tvOS version compatibility issues
 
-### 2. Runtime Hooking (`MuTubeHooks.dylib`)
-The dylib installs inline ARM64 hooks at two addresses:
+### 2. Runtime Hook Handler (`MuTubeHooks.dylib`)
+The dylib hooks into gum-graft's infrastructure:
 
-1. **HTMLScriptElement::Execute** (`0xed5270`)
-   - Intercepts JavaScript execution in the Cobalt browser
-   - Prepends TizenTube userscript injection code
-   - Enables 4K playback by manipulating `MediaSource.isTypeSupported()`
+1. On load, finds the `GumGraftedHeader` in memory
+2. Fills in `begin_invocation` and `end_invocation` function pointers
+3. Activates hooks by setting flags in `GumGraftedHook` entries
 
-2. **DirectiveList::AddDirective** (`0x152d508`)
-   - Modifies Content Security Policy directives
-   - Whitelists domains: `sponsorblock.inf.re`, `sponsor.ajay.app`, `dearrow-thumb.ajay.app`, `cdn.jsdelivr.net`
-   - Allows TizenTube to fetch SponsorBlock data and assets
+**Hook implementations:**
 
-### Implementation
-- Hooks use memory trampolines created with `mmap(PROT_EXEC)`
-- Original instructions are preserved in trampolines
-- Hook functions modify `std::string` parameters using libc++ functions
-- No external dependencies (no Frida, no gum-graft)
+- **HTMLScriptElement::Execute** (`0xed5270`)
+  - Receives CPU context with function arguments
+  - Checks if script contains "yttv"
+  - Prepends TizenTube userscript injection code
+  - Enables 4K playback support
+
+- **DirectiveList::AddDirective** (`0x152d508`)
+  - Receives CPU context with CSP directive value
+  - Prepends domain whitelist for SponsorBlock and CDN access
+  - Domains: `sponsorblock.inf.re`, `sponsor.ajay.app`, `dearrow-thumb.ajay.app`, `cdn.jsdelivr.net`
+
+### Why This Approach?
+
+- **Version stability**: gum-graft is version-agnostic, only Frida Gadget had compatibility issues
+- **No runtime dependencies**: Custom dylib is simple and tvOS-version independent
+- **Proven patching**: Uses Frida's battle-tested binary modification tool
+- **Simpler than full reimplementation**: Leverages existing infrastructure
