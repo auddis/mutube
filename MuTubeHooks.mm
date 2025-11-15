@@ -1,7 +1,9 @@
 #import <Foundation/Foundation.h>
 #import <mach/mach.h>
+#import <mach/vm_prot.h>
 #import <mach-o/dyld.h>
 #import <dlfcn.h>
+#import <libkern/OSCacheControl.h>
 #import <string>
 #import <cstring>
 #import <pthread.h>
