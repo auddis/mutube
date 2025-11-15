@@ -161,7 +161,7 @@ bool installHook(HookInfo* hookInfo, void* targetAddr, void* hookFunc) {
 
     // Restore memory protection
     kr = vm_protect(mach_task_self(), page, size, FALSE,
-                    VM_PROT_READ | VM_PROT_EXEC);
+                    VM_PROT_READ | VM_PROT_EXECUTE);
     if (kr != KERN_SUCCESS) {
         NSLog(@"[MuTubeHooks] vm_protect failed for exec: %d", kr);
     }
