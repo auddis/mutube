@@ -5,20 +5,27 @@ which removes ads and adds support for features like SponsorBlock.
 
 ## Setup
 
-MuTube has been tested using Frida 17.3.0 and YouTube 4.54.01 on an Apple TV 4K.
+MuTube has been tested with YouTube 4.54.01 on an Apple TV 4K.
 
-1. Install [insert_dylib](https://github.com/Tyilo/insert_dylib).
+### Requirements
 
-    ```bash
-    git clone https://github.com/Tyilo/insert_dylib
-    cd insert_dylib
-    xcodebuild
-    cp build/Release/insert_dylib /usr/local/bin/insert_dylib
-    ```
+1. `uv` (used to run `patcher.py` and resolve script dependencies)
+2. Xcode Command Line Tools (`xcrun` + `clang` with the AppleTV SDK)
+3. A decrypted YouTube IPA
 
-2. Run `make`. Make sure `Makefile` points to the correct IPA file.
-   Different versions of YouTube will require different addresses to instrument.
-   Both the Makefile and the `main.js` file need to be updated accordingly.
+### Build
+
+```bash
+make
+```
+
+Output: `mutube.ipa`
+
+Optional printf tracing in stubs:
+
+```bash
+make PRINTF_LOGS=1
+```
 
 ## Usage
 
