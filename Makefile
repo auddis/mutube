@@ -1,5 +1,5 @@
 FRIDA_VERSION := 17.3.0
-YOUTUBE_IPA := ./ipa/YouTube_4.51.08_decrypted.ipa
+YOUTUBE_IPA := ./ipa/YouTube_4.54.01_decrypted.ipa
 GUM_GRAFT := ./bin/gum-graft-$(FRIDA_VERSION)-macos-arm64
 
 .PHONY: all
@@ -22,7 +22,7 @@ mutube.ipa: $(YOUTUBE_IPA) $(GUM_GRAFT) main.js script_config.json
 	mv $(TMPDIR)/frida-gadget.dylib $(TMPDIR)/yt-unzip/Payload/YouTubeUnstable.app/Frameworks/FridaGadget.dylib
 	cp ./script_config.json $(TMPDIR)/yt-unzip/Payload/YouTubeUnstable.app/FridaGadget.config
 	cp ./main.js $(TMPDIR)/yt-unzip/Payload/YouTubeUnstable.app/main.js
-	$(GUM_GRAFT) $(TMPDIR)/yt-unzip/Payload/YouTubeUnstable.app/YouTubeUnstable --instrument=0xed5270 --instrument=0x152d508
+	$(GUM_GRAFT) $(TMPDIR)/yt-unzip/Payload/YouTubeUnstable.app/YouTubeUnstable --instrument=0xebd830 --instrument=0x1515ac8
 	insert_dylib --strip-codesig --inplace '@executable_path/Frameworks/FridaGadget.dylib' $(TMPDIR)/yt-unzip/Payload/YouTubeUnstable.app/YouTubeUnstable
 	cd $(TMPDIR)/yt-unzip && zip -qr injected.ipa Payload
 	mv $(TMPDIR)/yt-unzip/injected.ipa mutube.ipa

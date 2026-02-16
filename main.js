@@ -131,7 +131,7 @@ window.MediaSource.isTypeSupported = function(mimeType) {
 
 // HTMLScriptElement::Execute
 // https://cobalt.googlesource.com/cobalt/+/19.lts.1+/src/cobalt/dom/html_script_element.cc#593
-Interceptor.attach(base.add(0xed5270), {
+Interceptor.attach(base.add(0xebd830), {
   onEnter(args) {
     const content = args[1];
     if (readStdString(content).res.includes("yttv")) {
@@ -142,7 +142,7 @@ Interceptor.attach(base.add(0xed5270), {
 
 // DirectiveList::AddDirective
 // https://cobalt.googlesource.com/cobalt/+/19.lts.1+/src/cobalt/csp/directive_list.cc#834
-Interceptor.attach(base.add(0x152d508), {
+Interceptor.attach(base.add(0x1515ac8), {
   onEnter(args) {
     prepend(
       args[2],
