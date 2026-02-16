@@ -4,3 +4,4 @@ bin/
 *.ipa
 .DS_Store
 scratch/
+__pycache__/
